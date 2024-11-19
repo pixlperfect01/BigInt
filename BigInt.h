@@ -6,6 +6,7 @@
 #define BIGINT_H
 #include <bitset>
 #include <cstdint>
+#include <string>
 
 template<size_t SIZE>
 class BigInt
@@ -18,6 +19,8 @@ public:
     BigInt(uint64_t);
     template<size_t SIZE1>
     explicit BigInt(const BigInt<SIZE1>&);
+
+    operator std::string() const;
 
     BigInt<SIZE>& operator=(const BigInt<SIZE>&);
     BigInt<SIZE>& operator=(uint64_t);
@@ -95,6 +98,39 @@ BigInt<SIZE>::BigInt(const BigInt<SIZE1>& RHS)
         }
     }
 }
+
+template<size_t SIZE>
+BigInt<SIZE>::operator std::string() const {
+    std::string out = "";
+    auto temp = *this;
+    while(temp != 0) {
+        auto digit = temp % 10;
+        temp /= 10;
+        if(digit == 0) {
+            out += '0';
+        } else if(digit == 1) {
+            out += '1';
+        } else if(digit == 2) {
+            out += '2';
+        } else if(digit == 3) {
+            out += '3';
+        } else if(digit == 4) {
+            out += '4';
+        } else if(digit == 5) {
+            out += '5';
+        } else if(digit == 6) {
+            out += '6';
+        } else if(digit == 7) {
+            out += '7';
+        } else if(digit == 8) {
+            out += '8';
+        } else if(digit == 9) {
+            out += '9';
+        }
+    }
+    return out;
+}
+
 
 template <size_t SIZE>
 BigInt<SIZE>& BigInt<SIZE>::operator=(const BigInt<SIZE>&) = default;
@@ -394,6 +430,9 @@ BigInt<SIZE>& BigInt<SIZE>::operator%=(const BigInt<SIZE>& RHS)
     return *this;
 }
 
-
+template<size_t SIZE>
+std::ostream& operator<<(std::ostream& LHS, const BigInt<SIZE>& RHS) {
+    return LHS << static_cast<std::string>(RHS);
+}
 
 #endif //BIGINT_H

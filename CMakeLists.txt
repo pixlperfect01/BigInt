@@ -7,4 +7,5 @@ include_directories(.)
 
 add_executable(BigInt
     main.cpp
-        BigInt.h)
+        BigInt.h
+        tests.h)
