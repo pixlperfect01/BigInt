@@ -24,6 +24,7 @@ public:
 
     BigInt<SIZE> operator~() const;
     BigInt<SIZE> operator-() const;
+    BigInt<SIZE> operator+() const;
 
     bool operator==(const BigInt<SIZE>&) const;
     bool operator!=(const BigInt<SIZE>&) const;
@@ -53,6 +54,9 @@ public:
     BigInt<SIZE> operator/(const BigInt<SIZE>&) const;
     BigInt<SIZE>& operator*=(const BigInt<SIZE>&);
     BigInt<SIZE>& operator/=(const BigInt<SIZE>&);
+
+    BigInt<SIZE> operator%(const BigInt<SIZE>&) const;
+    BigInt<SIZE>& operator%=(const BigInt<SIZE>&);
 };
 
 template <size_t SIZE>
@@ -114,6 +118,12 @@ template <size_t SIZE>
 BigInt<SIZE> BigInt<SIZE>::operator-() const
 {
     return ~*this + 1;
+}
+
+template <size_t SIZE>
+BigInt<SIZE> BigInt<SIZE>::operator+() const
+{
+    return *this;
 }
 
 template <size_t SIZE>
@@ -368,6 +378,19 @@ template <size_t SIZE>
 BigInt<SIZE>& BigInt<SIZE>::operator/=(const BigInt<SIZE>& RHS)
 {
     bits = (*this / RHS).bits;
+    return *this;
+}
+
+template<size_t SIZE>
+BigInt<SIZE> BigInt<SIZE>::operator%(const BigInt<SIZE>& RHS) const {
+    return *this - ((*this / RHS) * RHS);
+}
+
+
+template <size_t SIZE>
+BigInt<SIZE>& BigInt<SIZE>::operator%=(const BigInt<SIZE>& RHS)
+{
+    bits = (*this % RHS).bits;
     return *this;
 }
 
