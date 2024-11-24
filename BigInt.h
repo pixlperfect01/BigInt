@@ -4,6 +4,7 @@
 
 #ifndef BIGINT_H
 #define BIGINT_H
+#include <algorithm>
 #include <bitset>
 #include <cstdint>
 #include <string>
@@ -19,6 +20,7 @@ public:
     BigInt(uint64_t);
     template<size_t SIZE1>
     explicit BigInt(const BigInt<SIZE1>&);
+    explicit BigInt(const std::string&);
 
     operator std::string() const;
 
@@ -60,6 +62,14 @@ public:
 
     BigInt<SIZE> operator%(const BigInt<SIZE>&) const;
     BigInt<SIZE>& operator%=(const BigInt<SIZE>&);
+
+    // prefix
+    BigInt<SIZE>& operator++();
+    BigInt<SIZE>& operator--();
+
+    // postfix
+    BigInt<SIZE> operator++(int);
+    BigInt<SIZE> operator--(int);
 };
 
 template <size_t SIZE>
@@ -99,6 +109,25 @@ BigInt<SIZE>::BigInt(const BigInt<SIZE1>& RHS)
     }
 }
 
+template <size_t SIZE>
+BigInt<SIZE>::BigInt(const std::string& RHS)
+{
+    bits = { 0 };
+    size_t strlen = RHS.size();
+    BigInt<SIZE> place = 1;
+    for(size_t i1 = 0; i1 < strlen; i1++)
+    {
+        size_t i = strlen - i1 - 1;
+        if(RHS[i] < 48 || RHS[i] > 57)
+        {
+            throw std::invalid_argument("Improper string!");
+        }
+        *this += place * (RHS[i]-48);
+        place *= 10;
+    }
+}
+
+
 template<size_t SIZE>
 BigInt<SIZE>::operator std::string() const {
     std::string out = "";
@@ -128,6 +157,7 @@ BigInt<SIZE>::operator std::string() const {
             out += '9';
         }
     }
+    std::reverse(out.begin(), out.end());
     return out;
 }
 
@@ -430,9 +460,54 @@ BigInt<SIZE>& BigInt<SIZE>::operator%=(const BigInt<SIZE>& RHS)
     return *this;
 }
 
+template <size_t SIZE>
+BigInt<SIZE>& BigInt<SIZE>::operator++()
+{
+    *this += 1;
+    return *this;
+}
+
+template <size_t SIZE>
+BigInt<SIZE>& BigInt<SIZE>::operator--()
+{
+    *this -= 1;
+    return *this;
+}
+
+template <size_t SIZE>
+BigInt<SIZE> BigInt<SIZE>::operator++(int)
+{
+    BigInt<SIZE> temp = *this;
+    *this += 1;
+    return temp;
+}
+
+template <size_t SIZE>
+BigInt<SIZE> BigInt<SIZE>::operator--(int)
+{
+    BigInt<SIZE> temp = *this;
+    *this -= 1;
+    return temp;
+}
+
+
 template<size_t SIZE>
 std::ostream& operator<<(std::ostream& LHS, const BigInt<SIZE>& RHS) {
     return LHS << static_cast<std::string>(RHS);
+}
+
+namespace std
+{
+    template <size_t SIZE>
+    BigInt<SIZE> pow(BigInt<SIZE>& LHS, BigInt<SIZE>& RHS)
+    {
+        BigInt<SIZE> out = 1;
+        for(BigInt<SIZE> i = 0; i < RHS; ++i)
+        {
+            out *= LHS;
+        }
+        return out;
+    }
 }
 
 #endif //BIGINT_H
