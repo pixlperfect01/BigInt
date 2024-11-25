@@ -8,6 +8,7 @@
 #include <bitset>
 #include <cstdint>
 #include <string>
+#include <random>
 
 template<size_t SIZE>
 class BigInt
@@ -70,6 +71,9 @@ public:
     // postfix
     BigInt<SIZE> operator++(int);
     BigInt<SIZE> operator--(int);
+
+    static BigInt<SIZE> rand();
+    static BigInt<SIZE> randSeeded(uint64_t);
 };
 
 template <size_t SIZE>
@@ -132,6 +136,10 @@ template<size_t SIZE>
 BigInt<SIZE>::operator std::string() const {
     std::string out = "";
     auto temp = *this;
+    bool isNeg = temp < 0;
+    if (isNeg) {
+        temp = -temp;
+    }
     while(temp != 0) {
         auto digit = temp % 10;
         temp /= 10;
@@ -155,9 +163,17 @@ BigInt<SIZE>::operator std::string() const {
             out += '8';
         } else if(digit == 9) {
             out += '9';
+        } else {
+            std::cout << digit.bits << std::endl;
+            throw std::invalid_argument("Improper string!");
         }
     }
+    if(isNeg) {
+        out += '-';
+    }
     std::reverse(out.begin(), out.end());
+    if (out == "")
+        return "0";
     return out;
 }
 
@@ -490,6 +506,33 @@ BigInt<SIZE> BigInt<SIZE>::operator--(int)
     return temp;
 }
 
+template<size_t SIZE>
+BigInt<SIZE> BigInt<SIZE>::rand() {
+    std::mt19937_64 gen;
+    gen.seed(std::random_device()());
+    BigInt out;
+    for(size_t i = 0; i < SIZE; i+=64) {
+        const uint64_t r = gen();
+        for(size_t j = 0; j < 64 && i+j < SIZE; j++) {
+            out.bits.set(i+j, (r >> j) & 1);
+        }
+    }
+    return out;
+}
+
+template<size_t SIZE>
+BigInt<SIZE> BigInt<SIZE>::randSeeded(const uint64_t seed) {
+    std::mt19937_64 gen;
+    gen.seed(seed);
+    BigInt out;
+    for(size_t i = 0; i < SIZE; i+=64) {
+        const uint64_t r = gen();
+        for(size_t j = 0; j < 64 && i+j < SIZE; j++) {
+            out.bits.set(i+j, (r >> j) & 1);
+        }
+    }
+    return out;
+}
 
 template<size_t SIZE>
 std::ostream& operator<<(std::ostream& LHS, const BigInt<SIZE>& RHS) {
@@ -507,6 +550,21 @@ namespace std
             out *= LHS;
         }
         return out;
+    }
+
+    template <size_t SIZE>
+    BigInt<SIZE> max(BigInt<SIZE>& a, BigInt<SIZE>& b) {
+        return (a < b) ? b : a;
+    }
+
+    template <size_t SIZE>
+    BigInt<SIZE> min(BigInt<SIZE>& a, BigInt<SIZE>& b) {
+        return (a < b) ? a : b;
+    }
+
+    template <size_t SIZE>
+    BigInt<SIZE> clamp(BigInt<SIZE>& v, BigInt<SIZE>& lo, BigInt<SIZE>& hi) {
+        return (v < lo) ? lo : (v > hi) ? hi : v;
     }
 }
 
